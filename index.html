@@ -1,106 +1,267 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ColetaJá - Rastreamento Inteligente de Coleta</title>
-    <meta name="description" content="Sistema inteligente de rastreamento de coleta de resíduos em tempo real">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- Menu Superior -->
-    <header class="menu">
-        <div class="menu-content">
-            <div class="logo">
-                <i class="fas fa-recycle"></i>
-                <span>ColetaJá</span>
-            </div>
-            <nav>
-                <a href="#" class="active"><i class="fas fa-home"></i> Início</a>
-                <a href="#"><i class="fas fa-info-circle"></i> Sobre</a>
-                <a href="#"><i class="fas fa-phone"></i> Contato</a>
-                <a href="#" class="highlight-btn"><i class="fas fa-bell"></i> Alertas</a>
-            </nav>
-        </div>
-    </header>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Coletaja — Monitoramento do Caminhão</title>
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="container">
+				<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+					<h1>Coletaja</h1>
+					<button id="btnToggleSidebar" class="small-toggle" title="Mostrar mapa maior">Mostrar mapa maior</button>
+				</div>
+				<p class="subtitle">Rastreamento de rota do caminhão — mapa interativo e atualização em tempo real</p>
+				<div id="errorBox" class="error-box" aria-live="polite" hidden></div>
+			</div>
+		</header>
 
-    <!-- Status do Caminhão -->
-    <div class="truck-status-bar" id="truck-status">
-        <i class="fas fa-truck"></i>
-        <span>Carregando localização...</span>
-    </div>
-
-    <!-- Conteúdo Principal -->
-    <main class="container">
-        <!-- Painel Lateral -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2><i class="fas fa-clock"></i> Próximas Coletas</h2>
-                <div class="search-box">
-                    <input type="text" placeholder="Buscar bairro..." id="neighborhood-search">
-                    <i class="fas fa-search"></i>
-                </div>
-            </div>
-            <div class="schedule-container">
-                <ul id="schedule-list" class="schedule-list"></ul>
-            </div>
-            <div class="sidebar-footer">
-                <button class="refresh-btn">
-                    <i class="fas fa-sync-alt"></i> Atualizar Horários
-                </button>
-            </div>
-        </aside>
-
-        <!-- Mapa com Controles -->
-        <section class="map-container">
-            <div class="map-controls">
-                <button class="map-control-btn" onclick="map.zoomIn()">
-                    <i class="fas fa-plus"></i>
-                </button>
-                <button class="map-control-btn" onclick="map.zoomOut()">
-                    <i class="fas fa-minus"></i>
-                </button>
-                <button class="map-control-btn" onclick="map.setView([-30.0346, -51.2177], 12)">
-                    <i class="fas fa-home"></i>
-                </button>
-            </div>
-            <div id="map"></div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3><i class="fas fa-info-circle"></i> Sobre Nós</h3>
-                <p>Facilitando o acesso à informação sobre coleta de resíduos em Porto Alegre.</p>
-            </div>
-            <div class="footer-section">
-                <h3><i class="fas fa-envelope"></i> Contato</h3>
-                <p>Email: contato@coletaja.com.br</p>
-                <p>Telefone: (51) 3XXX-XXXX</p>
-            </div>
-            <div class="footer-section">
-                <h3><i class="fas fa-share-alt"></i> Redes Sociais</h3>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                </div>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>© 2025 ColetaJá. Todos os direitos reservados.</p>
-        </div>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+		<main class="container main-grid">
+			<section id="map" class="map" aria-label="Mapa interativo">
+				<!-- overlay com ETA/velocidade -->
+				<div id="mapOverlay" class="map-overlay" aria-hidden="false">
+					<div class="row"><div class="label">ETA</div><div id="overlayETA" class="value">--</div></div>
+					<div class="row"><div class="label">Velocidade</div><div id="overlaySpeed" class="value">-- km/h</div></div>
+				<!DOCTYPE html>
+				<html lang="pt-BR">
+				<head>
+					<meta charset="UTF-8">
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<title>Coletaja — Monitoramento do Caminhão</title>
+					<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+					<link rel="stylesheet" href="style_new.css">
+					<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+					<style>
+						body {
+							margin: 0;
+							font-family: 'Inter', Arial, sans-serif;
+							background: #f4f7fa;
+							color: #222;
+						}
+						.site-header {
+							background: linear-gradient(90deg, #0078d7 60%, #00c6a7 100%);
+							color: #fff;
+							padding: 2rem 1rem 1rem 1rem;
+							text-align: center;
+							box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+						}
+						.subtitle {
+							font-size: 1.1rem;
+							opacity: 0.95;
+							margin-top: 0.5rem;
+						}
+						.container {
+							max-width: 1200px;
+							margin: 0 auto;
+							padding: 0 1rem;
+						}
+						.main-grid {
+							display: flex;
+							flex-direction: row;
+							align-items: flex-start;
+							gap: 2rem;
+							margin-top: 2rem;
+						}
+						.map {
+							flex: 2 1 0%;
+							min-width: 350px;
+							min-height: 420px;
+							background: #eaf6fb;
+							border-radius: 18px;
+							box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+							position: relative;
+							margin-bottom: 0;
+						}
+						.sidebar {
+							flex: 1 1 0%;
+							min-width: 280px;
+							max-width: 350px;
+							display: flex;
+							flex-direction: column;
+							gap: 1.5rem;
+						}
+						.card {
+							background: #fff;
+							border-radius: 14px;
+							box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+							padding: 1.3rem 1.5rem;
+							margin-bottom: 0.5rem;
+						}
+						.status-card h2 {
+							margin: 0 0 0.5rem 0;
+							font-size: 1.2rem;
+							color: #0078d7;
+						}
+						.stat-row {
+							display: flex;
+							justify-content: space-between;
+							gap: 1.5rem;
+							margin-bottom: 0.7rem;
+						}
+						.stat-row .label {
+							font-weight: 600;
+							color: #555;
+							font-size: 0.98rem;
+						}
+						.stat-row .value {
+							font-size: 1.1rem;
+							color: #222;
+						}
+						.meta {
+							font-size: 0.93rem;
+							color: #888;
+							margin-top: 0.7rem;
+						}
+						.controls h3 {
+							margin: 0 0 0.5rem 0;
+							font-size: 1.08rem;
+							color: #0078d7;
+						}
+						.control-row {
+							display: flex;
+							gap: 0.7rem;
+							align-items: center;
+							margin-bottom: 0.7rem;
+						}
+						.route-card h3 {
+							margin: 0 0 0.5rem 0;
+							font-size: 1.08rem;
+							color: #0078d7;
+						}
+						.route-list {
+							list-style: none;
+							padding: 0;
+							margin: 0 0 0.7rem 0;
+						}
+						.route-list li {
+							padding: 0.5rem 0.2rem;
+							border-bottom: 1px solid #f0f0f0;
+							cursor: pointer;
+							transition: background 0.15s;
+						}
+						.route-list li.active {
+							background: #eaf6fb;
+							font-weight: 600;
+							color: #0078d7;
+						}
+						.route-legend {
+							display: flex;
+							gap: 1.2rem;
+							margin-top: 0.7rem;
+						}
+						.legend-item {
+							display: flex;
+							align-items: center;
+							gap: 0.4rem;
+							font-size: 0.97rem;
+						}
+						.legend-swatch {
+							width: 18px; height: 10px; border-radius: 4px; display: inline-block;
+						}
+						.small {
+							font-size: 0.93rem;
+							color: #888;
+							margin-top: 1.2rem;
+							text-align: center;
+						}
+						.error-box {
+							background: #ffeaea;
+							color: #b00;
+							border-radius: 8px;
+							padding: 0.7rem 1rem;
+							margin: 1rem 0;
+							font-size: 1rem;
+							display: block;
+						}
+						@media (max-width: 900px) {
+							.main-grid {
+								flex-direction: column;
+								gap: 1.5rem;
+							}
+							.map {
+								min-width: 0;
+								width: 100%;
+								margin-bottom: 1.2rem;
+							}
+							.sidebar {
+								max-width: 100%;
+								width: 100%;
+							}
+						}
+						@media (max-width: 600px) {
+							.main-grid { gap: 0.7rem; }
+							.site-header { padding: 1.2rem 0.5rem 0.7rem 0.5rem; }
+							.container { padding: 0 0.2rem; }
+							.map {
+								min-height: 300px;
+							}
+						}
+					</style>
+				</head>
+				<body>
+					<header class="site-header">
+						<div class="container">
+							<h1>Coletaja</h1>
+							<p class="subtitle">Rastreamento de rota do caminhão — mapa interativo e atualização em tempo real</p>
+							<div id="errorBox" class="error-box" aria-live="polite" hidden></div>
+						</div>
+					</header>
+					<main class="container main-grid">
+						<section id="map" class="map" aria-label="Mapa interativo"></section>
+						<aside class="sidebar">
+							<div class="card status-card">
+								<h2>Próximo de chegada</h2>
+								<div class="stat-row">
+									<div>
+										<div class="label">Estado</div>
+										<div id="status" class="value">Carregando...</div>
+									</div>
+									<div>
+										<div class="label">ETA</div>
+										<div id="eta" class="value">--:--</div>
+									</div>
+								</div>
+								<div class="meta">
+									Última atualização: <span id="lastUpdate">--</span>
+								</div>
+							</div>
+							<div class="card controls">
+								<h3>Controles</h3>
+								<div class="control-row">
+									<button id="btnToggle">Pausar</button>
+									<button id="btnReset" title="Reiniciar rota" aria-label="Recomeçar rota">
+										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 1.03-.25 1.99-.69 2.85l1.46 1.46C19.9 15.25 20.5 13.66 20.5 12c0-4.14-3.36-7.5-7.5-7.5z" fill="currentColor"/></svg>
+										<span class="btn-text">Recomeçar</span>
+									</button>
+									<label class="speed">Velocidade
+										<input id="speedRange" type="range" min="10" max="80" value="30">
+									</label>
+								</div>
+								<div style="margin-top:10px">
+									<label for="startTime" class="label">Hora de partida</label>
+									<input id="startTime" type="datetime-local" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit">
+								</div>
+								<div class="note">Ajuste a velocidade ou a hora de partida para atualizar os horários estimados de passagem.</div>
+							</div>
+							<div class="card route-card">
+								<h3>Rota</h3>
+								<ol id="routeList" class="route-list"></ol>
+								<div class="route-legend">
+									<div class="legend-item"><div class="legend-swatch" style="background:#06b6d4"></div><div class="legend-text">Rota planejada</div></div>
+									<div class="legend-item"><div class="legend-swatch" style="background:#fff;border-radius:50%"></div><div class="legend-text">Caminhão</div></div>
+								</div>
+							</div>
+							<footer class="small">Criado para exposição técnica — dados simulados.</footer>
+						</aside>
+					</main>
+					<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+					<script src="script.js"></script>
+				</body>
+				</html>
+					<script src="script.js"></script>
+				</body>
+			</html>

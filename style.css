@@ -1,329 +1,111 @@
-/* Reset básico */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+/* style.css — estilo principal limpo e consistente */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+:root{
+  --bg:#f4f7fb;
+  --primary:#0078d7;
+  --accent:#06b6d4;
+  --muted:#888;
+  --card:#ffffff;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+
+.site-header{
+  background: linear-gradient(90deg, var(--primary) 50%, #00c6a7 100%);
+  color: #fff;
+  padding: 1.6rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.site-header .container{display:block;max-width:1200px;margin:0 auto}
+.site-header h1{margin:0;font-size:1.25rem}
+.site-header .subtitle{margin-top:6px;opacity:0.95}
+
+.container{max-width:1200px;margin:0 auto;padding:0 1rem}
+.main-grid{display:flex;gap:1.6rem;margin:1.4rem auto}
+
+.map{
+  flex:2 1 0%;
+  min-width:300px;
+  min-height:420px;
+  background: #eaf6fb;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+  position:relative;
+  overflow:hidden;
 }
 
-:root {
-  --primary-color: #00a676;
-  --primary-dark: #008264;
-  --secondary-color: #e0f2f1;
-  --accent-color: #004d40;
-  --text-light: #ffffff;
-  --text-dark: #333333;
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
-  --border-radius: 8px;
-  --transition: all 0.3s ease;
+/* garantir que o elemento #map ocupe todo o espaço do contêiner .map */
+.map #map, #map{
+  width:100%;
+  height:100%;
+  min-height:420px;
+  display:block;
 }
 
-/* Menu Superior */
-.menu {
-  background-color: #00a676;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  width: 100%;
+.map-overlay{
+  position:absolute;
+  left:12px;
+  top:12px;
+  background:rgba(255,255,255,0.98);
+  border-radius:10px;
+  padding:8px 10px;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  z-index: 600;
+  font-size:0.95rem;
+}
+.map-overlay .row{display:flex;gap:8px;align-items:center}
+.map-overlay .label{color:var(--muted);font-weight:600}
+.map-overlay .value{font-weight:700}
+
+.sidebar{
+  flex:1 1 0%;
+  min-width:280px;
+  max-width:360px;
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+}
+.card{background:var(--card);border-radius:10px;padding:1rem;box-shadow:0 4px 14px rgba(0,0,0,0.05)}
+.status-card h2{margin:0 0 .5rem 0;color:var(--primary)}
+.stat-row{display:flex;justify-content:space-between;gap:1rem}
+.stat-row .label{font-weight:600;color:#555}
+.stat-row .value{font-weight:700}
+.controls .control-row{display:flex;gap:0.6rem;align-items:center}
+.route-list{list-style:none;padding:0;margin:0}
+.route-list li{padding:.5rem;border-bottom:1px solid #f0f0f0;cursor:pointer}
+.route-list li.active{background:#eaf6fb;font-weight:600;color:var(--primary)}
+.route-legend{display:flex;gap:1rem;margin-top:.6rem}
+.legend-swatch{width:18px;height:10px;border-radius:4px}
+.small{font-size:.9rem;color:var(--muted);text-align:center}
+.error-box{background:#ffeaea;color:#b00;padding:.6rem;border-radius:8px;display:block}
+
+/* quando colapsamos a sidebar, o mapa ocupa tudo */
+.sidebar-collapsed .sidebar{display:none}
+.sidebar-collapsed .main-grid{grid-template-columns:1fr}
+.sidebar-collapsed .map{flex:1 1 100%;min-height:60vh}
+
+/* responsividade */
+@media (max-width:900px){
+  .main-grid{flex-direction:column;padding:0 0 1rem 0}
+  .sidebar{max-width:100%;width:100%}
+  .map{min-height:320px}
+  .map #map{min-height:320px}
 }
 
-.menu .logo {
-  font-size: 2rem;
-  font-weight: bold;
-  letter-spacing: 1px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+@media (max-width:600px){
+  .site-header{padding:1rem}
+  .map{min-height:300px}
+  .map #map{min-height:300px}
 }
 
-.menu nav a {
-  margin-left: 1.8rem;
-  text-decoration: none;
-  color: white;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  position: relative;
-  padding-bottom: 3px;
-}
+/* estilo do ícone de caminhão (divIcon) */
+.truck-icon svg{filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));}
 
-.menu nav a:hover {
-  color: #e0f2f1;
-}
+/* pequenas melhorias visuais */
+button{cursor:pointer;padding:.5rem .7rem;border-radius:8px;border:0;background:var(--primary);color:#fff}
+button[disabled]{opacity:.5;cursor:default}
+input[type=range]{height:2px}
 
-.menu nav a::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: 0;
-  left: 0;
-  background-color: #e0f2f1;
-  transition: width 0.3s ease;
-}
-
-.menu nav a:hover::after {
-  width: 100%;
-}
-
-body {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Container principal */
-.container {
-  display: flex;
-  flex: 1;
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  overflow: hidden;
-}
-
-/* Painel lateral */
-.sidebar {
-  width: 320px;
-  min-width: 320px;
-  background-color: #f5f9f8;
-  padding: 2rem 1.5rem;
-  border-right: 2px solid #b2dfdb;
-  overflow-y: auto;
-  box-shadow: 2px 0 15px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
-  z-index: 2;
-  height: 100%;
-}
-
-.sidebar h2 {
-  margin-bottom: 1.5rem;
-  color: #00796b;
-  font-size: 1.5rem;
-  font-weight: 600;
-  position: relative;
-  padding-bottom: 0.5rem;
-}
-
-.sidebar h2::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 50px;
-  height: 3px;
-  background-color: #00a676;
-  border-radius: 2px;
-}
-
-.sidebar ul li {
-  list-style: none;
-  margin-bottom: 1rem;
-  padding: 0.8rem 1rem;
-  background-color: #e0f2f1;
-  border-left: 5px solid #00a676;
-  border-radius: 6px;
-  transition: background 0.3s, transform 0.2s;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-}
-
-.sidebar ul li:hover {
-  background-color: #b2dfdb;
-  transform: translateX(5px);
-}
-
-/* Mapa */
-.map-container {
-  flex: 1;
-  position: relative;
-  height: 100%;
-  min-width: 0;
-  width: calc(100% - 320px);
-}
-
-#map {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  display: block;
-}
-
-/* Footer */
-.footer {
-  background-color: #004d40;
-  background-image: linear-gradient(135deg, #004d40 0%, #00695c 100%);
-  color: white;
-  text-align: center;
-  padding: 1rem;
-  font-size: 0.9rem;
-  box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-  flex-shrink: 0;
-  width: 100%;
-}
-
-/* Scroll do sidebar */
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: #f5f9f8;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background-color: #80cbc4;
-  border-radius: 3px;
-  transition: background-color 0.3s ease;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background-color: #4db6ac;
-}
-
-/* Estilos responsivos */
-@media screen and (max-width: 1024px) {
-  .sidebar {
-    width: 280px;
-    padding: 1.5rem 1rem;
-  }
-  
-  .menu {
-    padding: 1rem 1.5rem;
-  }
-  
-  .menu .logo {
-    font-size: 1.8rem;
-  }
-  
-  .menu nav a {
-    margin-left: 1.2rem;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .menu {
-    padding: 0.8rem 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .menu .logo {
-    font-size: 1.6rem;
-    width: 100%;
-    text-align: center;
-  }
-  
-  .menu nav {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-top: 0.5rem;
-  }
-
-  .container {
-    flex-direction: column;
-    height: calc(100vh - 140px);
-  }
-
-  .sidebar {
-    width: 100%;
-    min-width: 100%;
-    max-height: 40vh;
-    padding: 1rem;
-  }
-
-  .map-container {
-    width: 100%;
-    height: 60vh;
-  }
-
-  #map {
-    position: relative;
-  }
-}
-    gap: 1rem;
-  }
-  
-  .menu nav a {
-    margin-left: 0;
-  }
-  
-  .container {
-    flex-direction: column;
-    height: auto;
-  }
-  
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 2px solid #b2dfdb;
-    max-height: 300px;
-  }
-  
-  #map {
-    height: 50vh;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .menu .logo {
-    font-size: 1.4rem;
-  }
-  
-  .menu nav {
-    flex-wrap: wrap;
-  }
-  
-  .sidebar {
-    padding: 1rem;
-    max-height: 250px;
-  }
-  
-  .sidebar h2 {
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
-  }
-  
-  .sidebar ul li {
-    padding: 0.6rem 0.8rem;
-    font-size: 0.9rem;
-  }
-  
-  #map {
-    height: 40vh;
-  }
-  
-  .footer {
-    padding: 1rem;
-    font-size: 0.8rem;
-  }
-}
-
-/* Suporte para telas muito pequenas */
-@media screen and (max-width: 320px) {
-  .menu .logo {
-    font-size: 1.2rem;
-  }
-  
-  .menu nav a {
-    font-size: 0.9rem;
-  }
-  
-  .sidebar {
-    max-height: 200px;
-  }
-  
-  #map {
-    height: 35vh;
-  }
-}
+/* garantir que maps controls fiquem acima */
+.leaflet-control-container{z-index:700}

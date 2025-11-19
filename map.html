@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Coletaja — Mapa</title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<header class="site-header">
+		<div class="container">
+			<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+				<h1>Coletaja</h1>
+				<button id="btnToggleSidebar" class="small-toggle" title="Mostrar mapa maior">Mostrar mapa maior</button>
+			</div>
+			<p class="subtitle">Rastreamento de rota do caminhão — mapa interativo e atualização em tempo real</p>
+			<div id="errorBox" class="error-box" aria-live="polite" hidden></div>
+		</div>
+	</header>
+
+	<main class="container main-grid">
+		<section id="map" class="map" aria-label="Mapa interativo">
+			<!-- overlay com ETA/velocidade -->
+			<div id="mapOverlay" class="map-overlay" aria-hidden="false">
+				<div class="row"><div class="label">ETA</div><div id="overlayETA" class="value">--</div></div>
+				<div class="row"><div class="label">Velocidade</div><div id="overlaySpeed" class="value">-- km/h</div></div>
+			</div>
+			<div id="map"></div>
+		</section>
+
+		<aside class="sidebar">
+			<div class="card status-card">
+				<h2 id="routeTitle">Rota</h2>
+				<div class="stat-row">
+					<div>
+						<div class="label">Estado</div>
+						<div id="status" class="value">Carregando...</div>
+					</div>
+					<div>
+						<div class="label">ETA</div>
+						<div id="eta" class="value">--:--</div>
+					</div>
+				</div>
+				<div class="meta">
+					Última atualização: <span id="lastUpdate">--</span>
+				</div>
+			</div>
+
+			<div class="card controls">
+				<h3>Controles</h3>
+				<div class="control-row">
+					<button id="btnToggle">Pausar</button>
+					<button id="btnReset" title="Reiniciar rota" aria-label="Recomeçar rota">Recomeçar</button>
+					<label class="speed">Velocidade
+						<input id="speedRange" type="range" min="10" max="80" value="30">
+					</label>
+				</div>
+				<div style="margin-top:10px">
+					<label for="startTime" class="label">Hora de partida</label>
+					<input id="startTime" type="datetime-local" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:inherit">
+				</div>
+				<div style="margin-top:10px">
+					<label for="routeSelect" class="label">Escolha o caminhão / rota</label>
+					<select id="routeSelect" style="width:100%;margin-top:6px;padding:8px;border-radius:8px">
+						<option value="zona-sul">Rota Zona Sul</option>
+						<option value="zona-norte">Rota Zona Norte</option>
+						<option value="centro">Rota Centro</option>
+					</select>
+				</div>
+				<div class="note">Clique em uma rota para carregar e ver a animação do caminhão.</div>
+			</div>
+
+			<div class="card route-card">
+				<h3>Rota</h3>
+				<ol id="routeList" class="route-list"></ol>
+				<div class="route-legend">
+					<div class="legend-item"><div class="legend-swatch" style="background:#06b6d4"></div><div class="legend-text">Rota planejada</div></div>
+					<div class="legend-item"><div class="legend-swatch" style="background:#fff;border-radius:50%"></div><div class="legend-text">Caminhão</div></div>
+				</div>
+			</div>
+
+			<footer class="small">Criado para exposição técnica — dados simulados.</footer>
+		</aside>
+	</main>
+
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<script src="script.js"></script>
+</body>
+</html>

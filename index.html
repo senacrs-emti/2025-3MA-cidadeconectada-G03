@@ -27,11 +27,25 @@
 				<div class="row"><div class="label">ETA</div><div id="overlayETA" class="value">--</div></div>
 				<div class="row"><div class="label">Velocidade</div><div id="overlaySpeed" class="value">-- km/h</div></div>
 			</div>
+			<!-- container do Leaflet (elemento #map será criado pelo script) -->
+			<div id="map"></div>
+			<!-- SVG do caminhão para animação (posicionado via JS) -->
+			<svg id="truckSvg" class="moving-truck" viewBox="0 0 64 64" width="48" height="48" hidden aria-hidden="true">
+				<g id="truckBody">
+					<rect x="2" y="20" width="40" height="18" rx="3" fill="#06b6d4" />
+					<rect x="36" y="24" width="18" height="12" rx="2" fill="#06b6d4" />
+					<circle class="wheel left" cx="12" cy="44" r="5" fill="#222" />
+					<circle class="wheel right" cx="44" cy="44" r="5" fill="#222" />
+				</g>
+				<g id="truckDetails">
+					<rect x="6" y="22" width="28" height="3" fill="#fff" opacity="0.12" />
+				</g>
+			</svg>
 		</section>
 
 		<aside class="sidebar">
 			<div class="card status-card">
-				<h2>Próximo de chegada</h2>
+				<h2 id="routeTitle">Rota</h2>
 				<div class="stat-row">
 					<div>
 						<div class="label">Estado</div>
@@ -60,7 +74,17 @@
 					<label for="startTime" class="label">Hora de partida</label>
 					<input id="startTime" type="datetime-local" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:inherit">
 				</div>
-				<div class="note">Ajuste a velocidade ou a hora de partida para atualizar os horários estimados de passagem.</div>
+				<div style="margin-top:10px">
+					<label for="routeSelect" class="label">Escolha o caminhão / rota</label>
+					<select id="routeSelect" style="width:100%;margin-top:6px;padding:8px;border-radius:8px">
+						<option value="zona-sul">Rota Zona Sul</option>
+						<option value="zona-norte">Rota Zona Norte</option>
+						<option value="centro">Rota Centro</option>
+						<option value="leste">Rota Leste</option>
+						<option value="nordeste">Rota Nordeste</option>
+					</select>
+				</div>
+				<div class="note">Clique em uma rota para carregar e ver a animação do caminhão.</div>
 			</div>
 
 			<div class="card route-card">
@@ -77,6 +101,8 @@
 	</main>
 
 	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+	<!-- animação de polilinha (dash moving) -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ant-path/1.4.0/leaflet-ant-path.min.js"></script>
 	<script src="script.js"></script>
 </body>
 </html>

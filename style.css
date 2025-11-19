@@ -58,6 +58,9 @@ html,body{height:100%;margin:0;font-family:'Inter', system-ui, -apple-system, 'S
 .map-overlay .label{color:var(--muted);font-weight:600}
 .map-overlay .value{font-weight:700}
 
+/* imagem do caminhão que será posicionada sobre o mapa (container do leaflet) */
+.moving-truck{position:absolute;left:0;top:0;width:44px;height:44px;transform:translate(-50%,-50%) rotate(0deg);z-index:650;pointer-events:none;transition:transform 0.4s linear, top 0.4s linear, left 0.4s linear}
+
 .sidebar{
   flex:1 1 0%;
   min-width:280px;
@@ -109,3 +112,17 @@ input[type=range]{height:2px}
 
 /* garantir que maps controls fiquem acima */
 .leaflet-control-container{z-index:700}
+
+/* animação de rodas e pulso para o SVG do caminhão */
+.moving .wheel{ transform-origin: center; animation: wheel-rotate 0.6s linear infinite; }
+@keyframes wheel-rotate{ from{ transform: rotate(0deg);} to{ transform: rotate(360deg);} }
+
+.moving-truck.moving{ filter: drop-shadow(0 8px 20px rgba(0,0,0,0.18)); transition: transform 0.25s linear; }
+
+/* quando o caminhão estiver chegando, pulse e destaque */
+.moving-truck.arriving{ animation: truck-pulse 1s ease-in-out infinite; }
+@keyframes truck-pulse{ 0%{ transform: translate(-50%,-50%) scale(1); filter: drop-shadow(0 6px 14px rgba(0,0,0,0.12)); } 50%{ transform: translate(-50%,-50%) scale(1.06); filter: drop-shadow(0 10px 26px rgba(217,83,79,0.18)); } 100%{ transform: translate(-50%,-50%) scale(1); filter: drop-shadow(0 6px 14px rgba(0,0,0,0.12)); } }
+
+/* badge 'Chegando' estilo (no sidebar) */
+.pt-status{ padding:2px 6px; border-radius:8px; background:transparent }
+.pt-status[style]{ /* keep inline color but add subtle bg */ background: rgba(0,0,0,0.03); }

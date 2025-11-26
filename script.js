@@ -78,7 +78,9 @@ function setError(message){ if(errorBox){ errorBox.hidden = false; errorBox.text
 function toLocalInputString(d){ const pad=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 const now = new Date(); now.setSeconds(0,0); if(startTimeInput) startTimeInput.value = toLocalInputString(now);
 
-let running = true; let speedKmh = Number(speedRange ? speedRange.value : 30) || 30; let speedMps = speedKmh * 1000 / 3600;
+let running = true;
+let speedKmh = Number(speedRange ? speedRange.value : 30) || 30;
+let speedMps = speedKmh * 1000 / 3600;
 
 // mapa e camadas
 let map, routeLine, progressLine, marker;
@@ -90,6 +92,11 @@ let totalRouteDistance = 0;
 let totalRouteDuration = 0;
 let scheduleTimes = [];
 let currentRouteKey = 'zona-sul';
+
+// animação do caminhão
+const truckRotationOffset = 180; // corrige caminhão virado; ajuste conforme necessário
+let dashAnimationOffset = 0;
+let dashAnimRafId = null;
 
 // Adicionar mapa de cores por rota
 const routeColors = {
@@ -107,15 +114,37 @@ function initMap(){
     map = L.map('map', {zoomControl:true}).setView(routeDefinitions[currentRouteKey].points[0], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:''}).addTo(map);
 
-    routeLine = L.polyline([], {color: routeColors[currentRouteKey]||'#06b6d4', weight:5, opacity:0.9}).addTo(map);
-    progressLine = L.polyline([], {color: '#0078d7', weight:6, opacity:0.95}).addTo(map);
+    // routeLine: linha vermelha (não percorrida ainda)
+    routeLine = L.polyline([], {
+      color: '#d32f2f',
+      weight: 5,
+      opacity: 0.9,
+      lineCap: 'round'
+    }).addTo(map);
 
-    // usar marker somente como fallback visual (esconderemos para privilegiar a imagem)
-    const truckHtml = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="6" width="15" height="9" rx="1.5" fill="${routeColors[currentRouteKey]||'#06b6d4'}"/><path d="M16 11h3l2 2v2h-5V11z" fill="${routeColors[currentRouteKey]||'#06b6d4'}"/><circle cx="7" cy="18" r="1.8" fill="#fff"/><circle cx="18" cy="18" r="1.8" fill="#fff"/></svg>`;
+    // progressLine: linha verde (já percorrida)
+    progressLine = L.polyline([], {
+      color: '#00c853',
+      weight: 6,
+      opacity: 0.95,
+      lineCap: 'round'
+    }).addTo(map);
+
+    // usar marker somente como fallback visual
+    const truckHtml = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g id="truck-body">
+        <rect x="1" y="6" width="15" height="9" rx="1.5" fill="${routeColors[currentRouteKey]||'#06b6d4'}"/>
+        <path d="M16 11h3l2 2v2h-5V11z" fill="${routeColors[currentRouteKey]||'#06b6d4'}"/>
+      </g>
+      <g id="wheels">
+        <circle class="truck-wheel" cx="7" cy="18" r="1.8" fill="#fff"/>
+        <circle class="truck-wheel" cx="18" cy="18" r="1.8" fill="#fff"/>
+      </g>
+    </svg>`;
     const truckIcon = L.divIcon({className:'truck-icon', html:truckHtml, iconSize:[34,34], iconAnchor:[17,17]});
 
     marker = L.marker(routeDefinitions[currentRouteKey].points[0], {icon:truckIcon, title:'Caminhão'}).addTo(map);
-    marker.setOpacity(0); // escondemos o marker para mostrar apenas a imagem animada
+    marker.setOpacity(0); // escondemos o marker para mostrar apenas o SVG posicionado
     marker.bindPopup('Caminhão');
 
     // garantir tamanho visível
@@ -166,8 +195,8 @@ async function fetchRouteFromOSRM(points){
     for(let i=1;i<legDurations.length+1;i++) osrmCumulativeSeconds[i] = osrmCumulativeSeconds[i-1] + (legDurations[i-1]||0);
 
     // atualizar camada
-    routeLine.setStyle({ color: routeColors[currentRouteKey] || '#06b6d4' });
-    progressLine.setStyle({ color: '#0078d7' });
+    routeLine.setStyle({ color: '#d32f2f' });
+    progressLine.setStyle({ color: '#00c853' });
     routeLine.setLatLngs(expandedRoute);
     map.fitBounds(routeLine.getBounds(), {padding:[40,40]});
 
@@ -196,10 +225,18 @@ async function fetchRouteFromOSRM(points){
 }
 
 function computeScheduleTimesFromOSRM(startDate, speedKmhLocal){
-  const times=[]; if(!osrmCumulativeSeconds || osrmCumulativeSeconds.length===0){ for(let i=0;i<routeDefinitions[currentRouteKey].names.length;i++) times.push(null); return times; }
+  const times=[];
+  if(!osrmCumulativeSeconds || osrmCumulativeSeconds.length===0){
+    for(let i=0;i<routeDefinitions[currentRouteKey].names.length;i++) times.push(null);
+    return times;
+  }
   const avgSpeedMps = totalRouteDistance>0 && totalRouteDuration>0 ? (totalRouteDistance/totalRouteDuration) : (speedKmhLocal/3.6);
-  const selectedSpeedMps = (speedKmhLocal||30)/3.6; const scale = avgSpeedMps/selectedSpeedMps;
-  for(let i=0;i<osrmCumulativeSeconds.length;i++){ const scaledSeconds = Math.round(osrmCumulativeSeconds[i]*scale); times.push(new Date(startDate.getTime() + scaledSeconds*1000)); }
+  const selectedSpeedMps = (speedKmhLocal||30)/3.6;
+  const scale = avgSpeedMps/selectedSpeedMps;
+  for(let i=0;i<osrmCumulativeSeconds.length;i++){
+    const scaledSeconds = Math.round(osrmCumulativeSeconds[i]*scale);
+    times.push(new Date(startDate.getTime() + scaledSeconds*1000));
+  }
   return times;
 }
 
@@ -237,7 +274,6 @@ function updateRouteTimesDisplay(){
     const idx = Number(span.dataset.index);
     const t = scheduleTimes[idx];
     span.textContent = t? t.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '--:--';
-    // pequena linha secundária com distância estimada/opcional
     const sub = subs[idx];
     if(sub){
       const name = routeDefinitions[currentRouteKey].names[idx] || ('Ponto '+(idx+1));
@@ -278,7 +314,7 @@ function updateRouteListActive(){
   const next = routeList.querySelector(`li[data-index='${nextWp}']`);
   if(next) next.classList.add('active');
 
-  // além disso, atualizar badge do próximo ponto para 'Chegando' quando estiver próximo
+  // atualizar badge do próximo ponto para 'Chegando' quando estiver próximo
   const statuses = routeList.querySelectorAll('.pt-status');
   statuses.forEach(span=> span.textContent = span.textContent); // manter como estava (vamos recomputar abaixo)
   const statusSpan = routeList.querySelector(`.pt-status[data-index='${nextWp}']`);
@@ -316,12 +352,31 @@ function updateUI(){
   updateRouteTimesDisplay();
 
   // atualizar popup com próximo ponto e tempo
-  if(marker){ const remKm = (remMeters/1000).toFixed(2); let traveled = (currentLatLng && expandedCumulativeDist && expandedCumulativeDist.length) ? getDistanceAlongLatLng(currentLatLng) : 0; let nextWp = routeDefinitions[currentRouteKey].names.length-1; for(let i=0;i<originalWaypointDistAlong.length;i++){ if(originalWaypointDistAlong[i] > traveled){ nextWp = i; break; } } const nextTime = scheduleTimes[nextWp]; const nextTimeText = nextTime ? nextTime.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '--:--'; marker.bindPopup(`<strong>Coletaja</strong><br/>Velocidade: ${Math.round(speedKmh)} km/h<br/>Distância restante: ${remKm} km<br/>Próx. parada: ${routeDefinitions[currentRouteKey].names[nextWp] || ('Ponto '+(nextWp+1))} — ${nextTimeText}`); }
+  if(marker){
+    const remKm = (remMeters/1000).toFixed(2);
+    let traveled = (currentLatLng && expandedCumulativeDist && expandedCumulativeDist.length) ? getDistanceAlongLatLng(currentLatLng) : 0;
+    let nextWp = routeDefinitions[currentRouteKey].names.length-1;
+    for(let i=0;i<originalWaypointDistAlong.length;i++){
+      if(originalWaypointDistAlong[i] > traveled){ nextWp = i; break; }
+    }
+    const nextTime = scheduleTimes[nextWp];
+    const nextTimeText = nextTime ? nextTime.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '--:--';
+    marker.bindPopup(`<strong>Coletaja</strong><br/>Velocidade: ${Math.round(speedKmh)} km/h<br/>Distância restante: ${remKm} km<br/>Próx. parada: ${routeDefinitions[currentRouteKey].names[nextWp] || ('Ponto '+(nextWp+1))} — ${nextTimeText}`);
+  }
 }
 
 // ticker
-let ticker = null; function startTicker(){ if(ticker) return; // ativar animação do SVG
-  if(truckEl) truckEl.classList.add('moving'); ticker = setInterval(()=> advance(1), 1000); } function stopTicker(){ if(!ticker) return; clearInterval(ticker); ticker=null; if(truckEl) truckEl.classList.remove('moving'); }
+let ticker = null;
+function startTicker(){
+  if(ticker) return;
+  if(truckEl) truckEl.classList.add('moving');
+  ticker = setInterval(()=> advance(1), 1000);
+}
+function stopTicker(){
+  if(!ticker) return;
+  clearInterval(ticker); ticker=null;
+  if(truckEl) truckEl.classList.remove('moving');
+}
 
 // controles UI
 if(btnToggle){ btnToggle.addEventListener('click', ()=>{ running=!running; btnToggle.textContent = running? 'Pausar' : 'Retomar'; if(running) startTicker(); else stopTicker(); updateUI(); }); }
@@ -338,24 +393,45 @@ if(btnToggleSidebar){ btnToggleSidebar.addEventListener('click', ()=>{ const col
 if(routeSelect){ routeSelect.addEventListener('change', ()=>{ const key = routeSelect.value; loadRouteByKey(key); }); }
 
 // reset route
-function resetRoute(){ stopTicker(); currentIndex = 0; currentLatLng = expandedRoute && expandedRoute.length ? expandedRoute[0].clone() : L.latLng(routeDefinitions[currentRouteKey].points[0][0], routeDefinitions[currentRouteKey].points[0][1]); if(marker) marker.setLatLng(currentLatLng); setTruckImagePosition(currentLatLng); scheduleTimes = computeScheduleTimesFromOSRM(new Date(startTimeInput.value), speedKmh); updateRouteTimesDisplay(); updateUI(); running = true; if(btnToggle) btnToggle.textContent = 'Pausar'; startTicker(); try{ map.setView(currentLatLng, 13); }catch(e){} }
+function resetRoute(){
+  stopTicker();
+  currentIndex = 0;
+  currentLatLng = expandedRoute && expandedRoute.length ? expandedRoute[0].clone() : L.latLng(routeDefinitions[currentRouteKey].points[0][0], routeDefinitions[currentRouteKey].points[0][1]);
+  if(marker) marker.setLatLng(currentLatLng);
+  setTruckImagePosition(currentLatLng);
+  scheduleTimes = computeScheduleTimesFromOSRM(new Date(startTimeInput.value), speedKmh);
+  updateRouteTimesDisplay();
+  updateUI();
+  running = true;
+  if(btnToggle) btnToggle.textContent = 'Pausar';
+  startTicker();
+  try{ map.setView(currentLatLng, 13); }catch(e){}
+}
 
 // carregar rota por chave (ex: zona-sul)
-async function loadRouteByKey(key){ if(!routeDefinitions[key]){ setError('Rota desconhecida: '+key); return; } currentRouteKey = key; routeTitle.textContent = routeDefinitions[key].title || 'Rota'; routeSelect.value = key;
+async function loadRouteByKey(key){
+  if(!routeDefinitions[key]){ setError('Rota desconhecida: '+key); return; }
+  currentRouteKey = key;
+  routeTitle.textContent = routeDefinitions[key].title || 'Rota';
+  routeSelect.value = key;
   if(routeLine) routeLine.setLatLngs([]); if(progressLine) progressLine.setLatLngs([]);
   // ajustar estilos
-  if(routeLine) routeLine.setStyle({ color: routeColors[key] || '#06b6d4' });
-  if(progressLine) progressLine.setStyle({ color: '#0078d7' });
+  if(routeLine) routeLine.setStyle({ color: '#d32f2f' });
+  if(progressLine) progressLine.setStyle({ color: '#00c853' });
   // fetch route
   await fetchRouteFromOSRM(routeDefinitions[key].points);
   // preparar posição inicial
   expandedRoute = expandedRoute && expandedRoute.length ? expandedRoute : routeDefinitions[key].points.map(p=>L.latLng(p[0], p[1]));
-  currentIndex = 0; currentLatLng = expandedRoute[0].clone(); if(marker) marker.setLatLng(currentLatLng); setTruckImagePosition(currentLatLng);
+  currentIndex = 0;
+  currentLatLng = expandedRoute[0].clone();
+  if(marker) marker.setLatLng(currentLatLng);
+  setTruckImagePosition(currentLatLng);
   scheduleTimes = computeScheduleTimesFromOSRM(new Date(startTimeInput.value), speedKmh);
-  renderRouteList(); updateRouteTimesDisplay(); updateUI(); startTicker(); }
+  renderRouteList(); updateRouteTimesDisplay(); updateUI(); startTicker();
+}
 
 // movimento e animação
-let currentIndex = 0; 
+let currentIndex = 0;
 let currentLatLng = null;
 
 function interpolate(a,b,t){ return L.latLng(a.lat + (b.lat-a.lat)*t, a.lng + (b.lng-a.lng)*t); }
@@ -367,7 +443,7 @@ function remainingDistanceFrom(idx, latlng){ if(!expandedRoute || expandedRoute.
 function setTruckImagePosition(latlng){
   if(!truckEl || !map || !latlng) return;
   try{
-    const point = map.latLngToContainerPoint(latlng); // relativo ao container do mapa
+    const point = map.latLngToContainerPoint(latlng);
     const mapRect = map.getContainer().getBoundingClientRect();
     const parentRect = truckEl.parentElement.getBoundingClientRect();
     const offsetX = mapRect.left - parentRect.left;
@@ -377,7 +453,7 @@ function setTruckImagePosition(latlng){
     truckEl.style.left = left + 'px';
     truckEl.style.top = top + 'px';
 
-    // calcular ângulo de direção usando próximo ponto (em pixels) para rotacionar SVG
+    // calcular ângulo de direção usando próximo ponto
     let angle = 0;
     if(expandedRoute && expandedRoute.length){
       const nextIdx = Math.min(currentIndex+1, expandedRoute.length-1);
@@ -390,21 +466,52 @@ function setTruckImagePosition(latlng){
         angle = Math.atan2(dy, dx) * 180 / Math.PI;
       }
     }
-    truckEl.style.transform = `translate(-50%,-50%) rotate(${angle}deg)`;
+
+    // aplicar balanço (suspensão) SEM girar as rodas
+    const nowTs = Date.now();
+    const swayAmp = Math.min(8, Math.max(1, speedKmh / 12));
+    const swayY = Math.sin(nowTs / 200) * swayAmp;
+    const roll = Math.sin(nowTs / 350) * (swayAmp * 0.6);
+    const finalAngle = angle + truckRotationOffset + roll;
+
+    truckEl.style.transform = `translate(-50%,-50%) translateY(${swayY}px) rotate(${finalAngle}deg)`;
   }catch(e){ console.warn('setTruckImagePosition error', e); }
 }
 
 // atualizar linha de progresso (parte percorrida)
-function updateProgressLine(){ if(!progressLine || !expandedRoute || expandedRoute.length===0 || !currentLatLng) return; const segment = [];
+function updateProgressLine(){
+  if(!progressLine || !expandedRoute || expandedRoute.length===0 || !currentLatLng) return;
+  const segment = [];
   for(let i=0;i<=currentIndex;i++) segment.push(expandedRoute[i]);
-  // incluir ponto interpolado entre currentIndex e currentIndex+1
   if(currentIndex < expandedRoute.length-1){ segment.push(currentLatLng); }
   progressLine.setLatLngs(segment);
 }
 
-function advance(dt){ if(!running) return; if(!expandedRoute || expandedRoute.length===0) return; if(currentIndex >= expandedRoute.length-1) return; let remaining = speedMps * dt; while(remaining > 0 && currentIndex < expandedRoute.length-1){ const target = expandedRoute[currentIndex+1]; const segDist = distance(currentLatLng, target); if(remaining < segDist - 0.0001){ const t = remaining/segDist; currentLatLng = interpolate(currentLatLng, target, t); remaining = 0; } else { currentLatLng = target.clone(); remaining -= segDist; currentIndex++; } }
+function advance(dt){
+  if(!running) return;
+  if(!expandedRoute || expandedRoute.length===0) return;
+  if(currentIndex >= expandedRoute.length-1) return;
+
+  let remaining = speedMps * dt;
+  while(remaining > 0 && currentIndex < expandedRoute.length-1){
+    const target = expandedRoute[currentIndex+1];
+    const segDist = distance(currentLatLng, target);
+    if(remaining < segDist - 0.0001){
+      const t = remaining/segDist;
+      currentLatLng = interpolate(currentLatLng, target, t);
+      remaining = 0;
+    } else {
+      currentLatLng = target.clone();
+      remaining -= segDist;
+      currentIndex++;
+    }
+  }
+
   if(marker) marker.setLatLng(currentLatLng);
-  updateProgressLine(); setTruckImagePosition(currentLatLng); updateUI(); }
+  updateProgressLine();
+  setTruckImagePosition(currentLatLng);
+  updateUI();
+}
 
 // reposition truck on map move/zoom to keep it synced
 function attachMapListeners(){
@@ -413,8 +520,17 @@ function attachMapListeners(){
   map.on('zoom', ()=>{ setTruckImagePosition(currentLatLng); });
 }
 
+// utilitário formatETA
+function formatETA(seconds){
+  if(!isFinite(seconds)) return '--:--';
+  const s = Math.max(0, Math.round(seconds));
+  const h = Math.floor(s/3600); const m = Math.floor((s%3600)/60);
+  if(h>0) return `${h}h ${String(m).padStart(2,'0')}m`;
+  return `${m} min`;
+}
+
 // inicialização
-initMap(); // pre-popular select com padrão
+initMap();
 attachMapListeners();
 if(routeSelect && routeDefinitions[routeSelect.value]){ currentRouteKey = routeSelect.value; }
 loadRouteByKey(currentRouteKey).catch(err=> console.warn('Erro loadRouteByKey', err));

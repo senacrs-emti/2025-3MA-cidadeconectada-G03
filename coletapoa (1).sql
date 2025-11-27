@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 26/11/2025 às 19:44
+-- Tempo de geração: 27/11/2025 às 20:01
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.0.30
 
@@ -73,6 +73,34 @@ CREATE TABLE `coleta` (
   `Horario_coleta` varchar(45) NOT NULL,
   `Tipo_coleta` varchar(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `coleta`
+--
+
+INSERT INTO `coleta` (`ColetaId`, `Dia_coleta`, `Horario_coleta`, `Tipo_coleta`) VALUES
+(1, 'Quarta e Sexta', '8:00', 'Resido domiciliar'),
+(2, 'Segunda e Quinta', '8:00', 'Resido domiciliar'),
+(3, 'Segunda, Quarta e Sexta', '18h', 'Resido Domiciliar'),
+(4, 'Segunda e Quinta', '8:00', 'Residos domiciliar'),
+(5, 'Quartas e Sabados', '8:00', 'Residos domiciliar'),
+(6, 'Segundas e Sextas', '8:00', 'Residos domiciliar'),
+(7, 'Segundas e Quintas', '8:00', 'Residos domiciliar'),
+(8, 'Terças e Sextas', '8:00', 'Residos domiciliar'),
+(9, 'Segunda, Quarta e Sexta', '8:00', 'Residos domiciliar'),
+(10, 'coleta mecanizada', '8:00', 'Residos domiciliar'),
+(11, 'Coleta mecanizada', '18h', 'Residos domiciliar'),
+(12, 'Terça e Sabados', '8:00', 'Residos domiciliar'),
+(13, 'Segundas e Quartas', '8:00', 'Residos domiciliar'),
+(14, 'Terça e Sabado', '8:00', 'Residos domiliar'),
+(15, 'Quinta e Sabado', '8:00', 'Residos domiciliar'),
+(16, 'Quinta e Sabado', '8:00', 'Residos domiciliar'),
+(17, 'Quarta e Sabado', '8:00', 'Residos domiciliar'),
+(18, 'Terça e Quinta', '8:00', 'Residos domiciliar'),
+(19, 'Terças e Quintas', '8:00', 'Residos domiciliar'),
+(20, 'Terças e Quintas', '8:00', 'Residos domiciliar'),
+(21, 'Terça e Sabados', '8:00', 'Residos domiliciar'),
+(22, 'Quartas e Sexta', '8:00', 'Residos domiciliar');
 
 --
 -- Índices para tabelas despejadas

@@ -11,10 +11,26 @@
 <body>
 	<header class="site-header">
 		<div class="container">
+
+			<!-- linha do título + botões -->
 			<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
 				<h1>Coletaja</h1>
-				<button id="btnToggleSidebar" class="small-toggle" title="Mostrar mapa maior">Mostrar mapa maior</button>
+
+				<!-- CONTÊINER COM 2 BOTÕES -->
+				<div style="display:flex;align-items:center;gap:8px">
+					
+					<button id="btnToggleSidebar" class="small-toggle" title="Mostrar mapa maior">
+						Mostrar mapa maior
+					</button>
+
+					<!-- NOVO BOTÃO -->
+					<button id="btnExtra" class="small-toggle" title="Outro botão">
+						<a href="horarios.html">Horários dos caminhões</a>
+					</button>
+
+				</div>
 			</div>
+
 			<p class="subtitle">Rastreamento de rota do caminhão — mapa interativo e atualização em tempo real</p>
 			<div id="errorBox" class="error-box" aria-live="polite" hidden></div>
 		</div>
@@ -27,9 +43,10 @@
 				<div class="row"><div class="label">ETA</div><div id="overlayETA" class="value">--</div></div>
 				<div class="row"><div class="label">Velocidade</div><div id="overlaySpeed" class="value">-- km/h</div></div>
 			</div>
-			<!-- container do Leaflet (elemento #map será criado pelo script) -->
+
 			<div id="map"></div>
-			<!-- SVG do caminhão para animação (posicionado via JS) -->
+
+			<!-- SVG do caminhão -->
 			<svg id="truckSvg" class="moving-truck" viewBox="0 0 64 64" width="48" height="48" hidden aria-hidden="true">
 				<g id="truckBody">
 					<rect x="2" y="20" width="40" height="18" rx="3" fill="#06b6d4" />
@@ -56,9 +73,7 @@
 						<div id="eta" class="value">--:--</div>
 					</div>
 				</div>
-				<div class="meta">
-					Última atualização: <span id="lastUpdate">--</span>
-				</div>
+				<div class="meta">Última atualização: <span id="lastUpdate">--</span></div>
 			</div>
 
 			<div class="card controls">
@@ -70,10 +85,12 @@
 						<input id="speedRange" type="range" min="10" max="80" value="30">
 					</label>
 				</div>
+
 				<div style="margin-top:10px">
 					<label for="startTime" class="label">Hora de partida</label>
 					<input id="startTime" type="datetime-local" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:inherit">
 				</div>
+
 				<div style="margin-top:10px">
 					<label for="routeSelect" class="label">Escolha o caminhão / rota</label>
 					<select id="routeSelect" style="width:100%;margin-top:6px;padding:8px;border-radius:8px">
@@ -84,6 +101,7 @@
 						<option value="nordeste">Rota Nordeste</option>
 					</select>
 				</div>
+
 				<div class="note">Clique em uma rota para carregar e ver a animação do caminhão.</div>
 			</div>
 
@@ -91,8 +109,14 @@
 				<h3>Rota</h3>
 				<ol id="routeList" class="route-list"></ol>
 				<div class="route-legend">
-					<div class="legend-item"><div class="legend-swatch" style="background:#06b6d4"></div><div class="legend-text">Rota planejada</div></div>
-					<div class="legend-item"><div class="legend-swatch" style="background:#fff;border-radius:50%"></div><div class="legend-text">Caminhão</div></div>
+					<div class="legend-item">
+						<div class="legend-swatch" style="background:#06b6d4"></div>
+						<div class="legend-text">Rota planejada</div>
+					</div>
+					<div class="legend-item">
+						<div class="legend-swatch" style="background:#fff;border-radius:50%"></div>
+						<div class="legend-text">Caminhão</div>
+					</div>
 				</div>
 			</div>
 
@@ -101,8 +125,9 @@
 	</main>
 
 	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-	<!-- animação de polilinha (dash moving) -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-ant-path/1.4.0/leaflet-ant-path.min.js"></script>
 	<script src="script.js"></script>
+
+	
 </body>
 </html>

@@ -24,6 +24,11 @@ html,body{height:100%;margin:0;font-family:'Inter', system-ui, -apple-system, 'S
 .container{max-width:1200px;margin:0 auto;padding:0 1rem}
 .main-grid{display:flex;gap:1.6rem;margin:1.4rem auto}
 
+.small-toggle a{
+  color: white;
+  text-decoration: none;
+
+}
 .map{
   flex:2 1 0%;
   min-width:300px;

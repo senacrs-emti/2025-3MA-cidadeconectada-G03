@@ -94,7 +94,7 @@ let scheduleTimes = [];
 let currentRouteKey = 'zona-sul';
 
 // animação do caminhão
-const truckRotationOffset = 180; // corrige caminhão virado; ajuste conforme necessário
+const truckRotationOffset = 0; // caminhão na posição normal, sem rotação
 let dashAnimationOffset = 0;
 let dashAnimRafId = null;
 
@@ -131,17 +131,14 @@ function initMap(){
     }).addTo(map);
 
     // usar marker somente como fallback visual
-    const truckHtml = `<svg width="34" height="34" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <g id="truck-body">
-        <rect x="1" y="6" width="15" height="9" rx="1.5" fill="${routeColors[currentRouteKey]||'#06b6d4'}"/>
-        <path d="M16 11h3l2 2v2h-5V11z" fill="${routeColors[currentRouteKey]||'#06b6d4'}"/>
-      </g>
-      <g id="wheels">
-        <circle class="truck-wheel" cx="7" cy="18" r="1.8" fill="#fff"/>
-        <circle class="truck-wheel" cx="18" cy="18" r="1.8" fill="#fff"/>
-      </g>
+    const truckHtml = `<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="19" fill="${routeColors[currentRouteKey]||'#06b6d4'}" opacity="0.15" stroke="${routeColors[currentRouteKey]||'#06b6d4'}" stroke-width="2"/>
+      <rect x="10" y="14" width="16" height="12" rx="2" fill="${routeColors[currentRouteKey]||'#06b6d4'}" stroke="${routeColors[currentRouteKey]||'#06b6d4'}" stroke-width="1.5"/>
+      <path d="M26 16h4v3h-4" fill="${routeColors[currentRouteKey]||'#06b6d4'}" stroke="${routeColors[currentRouteKey]||'#06b6d4'}" stroke-width="1.5"/>
+      <circle cx="14" cy="28" r="2" fill="#333"/>
+      <circle cx="28" cy="28" r="2" fill="#333"/>
     </svg>`;
-    const truckIcon = L.divIcon({className:'truck-icon', html:truckHtml, iconSize:[34,34], iconAnchor:[17,17]});
+    const truckIcon = L.divIcon({className:'truck-icon', html:truckHtml, iconSize:[40,40], iconAnchor:[20,20]});
 
     marker = L.marker(routeDefinitions[currentRouteKey].points[0], {icon:truckIcon, title:'Caminhão'}).addTo(map);
     marker.setOpacity(0); // escondemos o marker para mostrar apenas o SVG posicionado
@@ -472,7 +469,7 @@ function setTruckImagePosition(latlng){
     const swayAmp = Math.min(8, Math.max(1, speedKmh / 12));
     const swayY = Math.sin(nowTs / 200) * swayAmp;
     const roll = Math.sin(nowTs / 350) * (swayAmp * 0.6);
-    const finalAngle = angle + truckRotationOffset + roll;
+    const finalAngle = 0; // caminhão parado, sem rotação
 
     truckEl.style.transform = `translate(-50%,-50%) translateY(${swayY}px) rotate(${finalAngle}deg)`;
   }catch(e){ console.warn('setTruckImagePosition error', e); }

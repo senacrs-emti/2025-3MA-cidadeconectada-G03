@@ -68,19 +68,27 @@ html,body{height:100%;margin:0;font-family:'Inter', system-ui, -apple-system, 'S
   display:flex;
   flex-direction:column;
   gap:1rem;
+  background:#f9fbfd;
+  padding:1.2rem;
+  border-radius:14px;
+  border:1px solid #e0e8f0;
 }
-.card{background:var(--card);border-radius:10px;padding:1rem;box-shadow:0 4px 14px rgba(0,0,0,0.05)}
-.status-card h2{margin:0 0 .5rem 0;color:var(--primary)}
-.stat-row{display:flex;justify-content:space-between;gap:1rem}
-.stat-row .label{font-weight:600;color:#555}
-.stat-row .value{font-weight:700}
-.controls .control-row{display:flex;gap:0.6rem;align-items:center}
+.card{background:var(--card);border-radius:12px;padding:1.1rem;box-shadow:0 2px 8px rgba(0,0,0,0.04);border:1px solid #f0f0f0;transition:all 0.3s ease}
+.card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.status-card h2{margin:0 0 .8rem 0;color:var(--primary);font-size:1.1rem}
+.stat-row{display:flex;justify-content:space-between;gap:1rem;padding:0.6rem 0}
+.stat-row div{display:flex;flex-direction:column;gap:0.3rem}
+.stat-row .label{font-weight:600;color:#666;font-size:0.9rem}
+.stat-row .value{font-weight:700;color:var(--primary);font-size:1.25rem}
+.controls .control-row{display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap}
+.controls h3{margin:0 0 0.8rem 0;color:var(--primary)}
 .route-list{list-style:none;padding:0;margin:0}
-.route-list li{padding:.5rem;border-bottom:1px solid #f0f0f0;cursor:pointer}
-.route-list li.active{background:#eaf6fb;font-weight:600;color:var(--primary)}
-.route-legend{display:flex;gap:1rem;margin-top:.6rem}
+.route-list li{padding:0.7rem;border-bottom:1px solid #f5f5f5;cursor:pointer;border-radius:6px;transition:all 0.2s ease}
+.route-list li:hover{background:#f8f8f8}
+.route-list li.active{background:#fff;font-weight:600;color:var(--primary);border-left:3px solid var(--primary);padding-left:calc(0.7rem - 3px);box-shadow:0 2px 6px rgba(0,0,0,0.08)}
+.route-card h3{margin:0 0 0.8rem 0;color:var(--primary)}
 .legend-swatch{width:18px;height:10px;border-radius:4px}
-.small{font-size:.9rem;color:var(--muted);text-align:center}
+.small{font-size:.85rem;color:var(--muted);text-align:center;margin-top:auto;padding-top:0.8rem;border-top:1px solid rgba(0,0,0,0.06)}
 .error-box{background:#ffeaea;color:#b00;padding:.6rem;border-radius:8px;display:block}
 
 /* quando colapsamos a sidebar, o mapa ocupa tudo */
@@ -106,8 +114,9 @@ html,body{height:100%;margin:0;font-family:'Inter', system-ui, -apple-system, 'S
 .truck-icon svg{filter: drop-shadow(0 2px 6px rgba(0,0,0,0.12));}
 
 /* pequenas melhorias visuais */
-button{cursor:pointer;padding:.5rem .7rem;border-radius:8px;border:0;background:var(--primary);color:#fff}
-button[disabled]{opacity:.5;cursor:default}
+button{cursor:pointer;padding:0.6rem 1rem;border-radius:8px;border:0;background:var(--primary);color:#fff;font-weight:600;transition:all 0.2s ease}
+button:hover{background:#0066b3;transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,120,215,0.3)}
+button[disabled]{opacity:.5;cursor:default;transform:none}
 input[type=range]{height:2px}
 
 /* garantir que maps controls fiquem acima */

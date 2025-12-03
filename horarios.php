@@ -1,5 +1,5 @@
-<?php include_once(__DIR__ . '/includes/conexao.php');
-
+<?php 
+include_once(__DIR__ . '/conexao.php');
 ?>
 
 <?php
@@ -21,6 +21,7 @@ $bairros = $conn->query("SELECT Nome_bairro, Zona_cidade FROM bairro");
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="horarios.css">
     <meta charset="UTF-8">
     <title>Horários e Bairros</title>
 </head>
@@ -48,7 +49,6 @@ $bairros = $conn->query("SELECT Nome_bairro, Zona_cidade FROM bairro");
             </table>
         </td>
 
-        <!-- Tabela Bairros -->
         <td valign="top">
             <h3>Bairros</h3>
             <table border="1">

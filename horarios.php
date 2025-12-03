@@ -21,9 +21,11 @@ $bairros = $conn->query("SELECT Nome_bairro, Zona_cidade FROM bairro");
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="horarios.css">
+    
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="horario.css">
     <title>Horários e Bairros</title>
+    
 </head>
 <body>
 
